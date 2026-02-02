@@ -15,6 +15,7 @@ const goalFile = path.join(__dirname, '../memberGoal.json');
 
 function loadGoal() {
   if (!fs.existsSync(goalFile)) return null;
+
   return JSON.parse(fs.readFileSync(goalFile)).goal;
 }
 
@@ -44,15 +45,17 @@ module.exports = {
 
     // ----- CHECK MEMBER GOAL -----
     const goal = loadGoal();
+
     if (goal && memberCount >= goal) {
       const general = member.guild.channels.cache.get(generalChannelId);
 
       if (general) {
         general.send(
-`🎉 **WE HIT ${goal} MEMBERS!**  
-Thanks y'all
+          `🎉 **WE HIT ${goal} MEMBERS!**\nThanks y'all`
         );
       }
+
     }
+
   }
 };
