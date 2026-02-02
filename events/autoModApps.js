@@ -3,23 +3,20 @@ const path = require('path');
 
 const dataFile = path.join(__dirname, '../modapps.json');
 
-// ===== CONFIG =====
+// ===================== CONFIG =====================
 
-// Channels where the bot is allowed to respond
+// CHANNEL IDS where the bot is allowed to respond
 const allowedChannels = [
-  "general",
-  "support",
-  "minecraft",
-  "chat"
+  "1455310485363757338",   // general
 ];
 
-// Optional staff log channel (set null to disable)
-const staffLogChannel = "staff-logs";
+// Channel where staff logs should go (set to null to disable)
+const staffLogChannel = "1468013210446594280";
 
-// Cooldown in milliseconds (5 minutes)
+// Cooldown per user (5 minutes)
 const COOLDOWN = 5 * 60 * 1000;
 
-// ==================
+// ==================================================
 
 const cooldowns = new Map();
 
@@ -34,6 +31,7 @@ function loadData() {
   return JSON.parse(fs.readFileSync(dataFile));
 }
 
+// Phrases that trigger the response
 const triggers = [
   "can i be mod",
   "can i get mod",
@@ -50,16 +48,18 @@ module.exports = {
   name: 'messageCreate',
 
   async execute(message) {
+    // Ignore bots
     if (message.author.bot) return;
 
-    // ---- CHANNEL WHITELIST CHECK ----
-    if (!allowedChannels.includes(message.channel.name)) return;
+    // ----- CHANNEL WHITELIST (ID BASED) -----
+    if (!allowedChannels.includes(message.channel.id)) return;
 
     const content = message.content.toLowerCase();
 
+    // Check if message matches any trigger
     if (!triggers.some(t => content.includes(t))) return;
 
-    // ---- COOLDOWN CHECK ----
+    // ----- COOLDOWN CHECK -----
     const last = cooldowns.get(message.author.id);
     const now = Date.now();
 
@@ -78,10 +78,10 @@ ${data.message}
 
     await message.reply(reply);
 
-    // ---- STAFF LOG ----
+    // ----- OPTIONAL STAFF LOG -----
     if (staffLogChannel) {
-      const logChannel = message.guild.channels.cache
-        .find(c => c.name === staffLogChannel);
+      const logChannel =
+        message.guild.channels.cache.get(staffLogChannel);
 
       if (logChannel) {
         logChannel.send(
