@@ -10,7 +10,13 @@ if (!token) {
 }
 
 // Create a new client instance
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
+});
 
 const fs = require('fs');
 const path = require('path');
@@ -77,6 +83,21 @@ client.on(Events.InteractionCreate, async interaction => {
     }
   }
 });
+
+// ===== EVENT LOADER =====
+const eventsPath = path.join(__dirname, 'events');
+
+if (fs.existsSync(eventsPath)) {
+  const eventFiles = fs.readdirSync(eventsPath)
+    .filter(file => file.endsWith('.js'));
+
+  for (const file of eventFiles) {
+    const filePath = path.join(eventsPath, file);
+    const event = require(filePath);
+
+    client.on(event.name, (...args) => event.execute(...args));
+  }
+}
 
 // Log in to Discord
 client.login(token);
