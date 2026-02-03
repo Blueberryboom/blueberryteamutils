@@ -14,11 +14,11 @@ module.exports = {
     if (interaction.customId === 'how_to_join') {
 
       const embed = new EmbedBuilder()
-        .setTitle("🎮 How to Join")
+        .setTitle("🫐 How to Join")
         .setDescription(
 `**Minecraft IP:** \`${SERVER_IP}\`
 
-1. Open Minecraft (Java)
+1. Open Minecraft (Java only)
 2. Multiplayer → Add Server  
 3. Enter the IP above  
 4. Join and have fun!
