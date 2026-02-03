@@ -14,7 +14,7 @@ const allowedChannels = [
 const staffLogChannel = "1468013210446594280";
 
 // Cooldown per user (5 minutes)
-const COOLDOWN = 5 * 60 * 1000;
+const COOLDOWN = 5 * 60;
 
 // ==================================================
 
