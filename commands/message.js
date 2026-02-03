@@ -2,10 +2,12 @@ const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 
 // ===== PERMISSIONS =====
 const allowedRoleIds = [
-  "1455311132628877467", // Blueberry Overlord
-  "1468035072270536867", // Senior Moderator
-  "1455311815419625482",  // Mod
-  "1455544392415842500" // Trial Mod
+  "1468294909420240917", // Blueberry Overlord
+  "1468294685452927059", // Administrator
+  "1468292177397285037",  // Senior Moderator
+  "1468294094403928348", // Event Team
+  "1455544392415842500", // Trial Mod
+  "1468294406363680800" // Moderator
 ];
 
 // ===== YOUR MESSAGE LIBRARY =====
@@ -30,33 +32,10 @@ These rules are subject to changes. In the event of a change, you will be given 
 Breaking any of these rules will result in immediate termination from our partners.
 `,
 
-  creatorfaq: `
-# 📘 Creator FAQ
--# V1
-
-**Q: Can I record/stream on the server?**  
-✅ Yes! You’re welcome to create content on Blueberry Network. Please keep it respectful and follow server rules while recording.
-
-**Q: Do I need permission first?**  
-❌ No permission is needed for normal gameplay content!
-
-**Q: Can I show the IP in my video?**  
-✅ Absolutely — this is a requirement to be part of the Creator Programme!  
-IP: play.blueberrynet.uk
-
-**Q: Do creators get perks?**  
-✅ Yep! Eligible creators can get:
-- YouTuber rank in discord & server  
-- Free usage of the events server (1/month)  
-- Channel is advertised within the network!
-
-**Q: What’s NOT allowed in videos?**
-- Exploit tutorials  
-- Breaking server rules  
-- Encouraging rule breaking  
-
-**Q: What if the video I upload breaks these rules?**  
-You will be immediately removed from the creator program and could be banned network-wide. We may also ask for you to remove the video if it is only a minor issue.
+  suggestion_accepted: `
+# :burpletick: Suggestion Accepted
+Thanks for making the server a better place!
+We'll aim to have your idea implemented in the next few days!
 `
 };
 // ================================
@@ -72,7 +51,7 @@ module.exports = {
         .setRequired(true)
         .addChoices(
           { name: 'Partner Guidelines', value: 'partnerguidelines' },
-          { name: 'Creator FAQ', value: 'creatorfaq' }
+          { name: 'Suggestion - Accepted', value: 'suggestion_accepted' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
