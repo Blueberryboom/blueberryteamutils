@@ -4,14 +4,14 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const allowedRoleIds = [
   "1468294909420240917", // Blueberry Overlord
   "1468294685452927059", // Administrator
-  "1468292177397285037",  // Senior Moderator
+  "1468292177397285037", // Senior Moderator
   "1468294094403928348", // Event Team
   "1455544392415842500", // Trial Mod
-  "1468294406363680800" // Moderator
+  "1468294406363680800"  // Moderator
 ];
 
-const partnerRoleId = "1468302227075498105";      // @Partner
-const logChannelId = "1468013210446594280";      // management-logs
+const partnerRoleId = "1468302227075498105";         // @Partner
+const logChannelId = "1468013210446594280";          // management-logs
 const partnershipsChannelId = "1459595084663099609"; // public showcase
 // ==================
 
@@ -46,15 +46,17 @@ module.exports = {
 
   async execute(interaction) {
 
+    // ===== FIX: ACK INTERACTION IMMEDIATELY =====
+    await interaction.deferReply({ flags: 64 });
+
     // ----- ROLE CHECK -----
     const hasRole = allowedRoleIds.some(id =>
       interaction.member.roles.cache.has(id)
     );
 
     if (!hasRole) {
-      return interaction.reply({
-        content: "❌ You don't have permission to use this command.",
-        ephemeral: true
+      return interaction.editReply({
+        content: "❌ You don't have permission to use this command."
       });
     }
 
@@ -66,30 +68,26 @@ module.exports = {
     const member = interaction.guild.members.cache.get(user.id);
 
     if (!member) {
-      return interaction.reply({
-        content: "❌ User not in server!",
-        ephemeral: true
+      return interaction.editReply({
+        content: "❌ User not in server!"
       });
     }
 
     if (!rulesShown) {
-      return interaction.reply({
-        content: "❌ You must confirm you showed them the partner guidelines!",
-        ephemeral: true
+      return interaction.editReply({
+        content: "❌ You must confirm you showed them the partner guidelines!"
       });
     }
 
     if (!adSent) {
-      return interaction.reply({
-        content: "❌ You must confirm OUR advert was posted in their server!",
-        ephemeral: true
+      return interaction.editReply({
+        content: "❌ You must confirm OUR advert was posted in their server!"
       });
     }
 
     if (member.roles.cache.has(partnerRoleId)) {
-      return interaction.reply({
-        content: "⚠️ User already has Partner role!",
-        ephemeral: true
+      return interaction.editReply({
+        content: "⚠️ User already has Partner role!"
       });
     }
 
@@ -127,14 +125,15 @@ module.exports = {
         .setTitle("🤝 Partnership Confirmed!")
         .setColor(0x57F287)
         .setDescription(
-`Hi ${user.username}!  
+`Hi ${user.username}!
 
 Your server **${serverName}** is now officially partnered with us and you now have the **Partner** role in our discord!
 
-Please ensure that you follow our partnership guidelines as outlined in the rules you agreed too.
+Please ensure that you follow our partnership guidelines as outlined in the rules you agreed to.
+
 If you require any further support - let us know in a ticket!
 
-Thanks - **The Blueberry Team Management**`
+Thanks — **The Blueberry Team Management**`
         )
         .setTimestamp();
 
@@ -143,12 +142,6 @@ Thanks - **The Blueberry Team Management**`
     } catch (err) {
       // DM closed – ignore
     }
-
-    // ----- STAFF CONFIRM -----
-    await interaction.reply({
-      content: `✅ Partnership completed with **${serverName}**`,
-      ephemeral: true
-    });
 
     // ----- LOGGING -----
     const log = interaction.guild.channels.cache.get(logChannelId);
@@ -168,6 +161,11 @@ Thanks - **The Blueberry Team Management**`
 
       log.send({ embeds: [logEmbed] });
     }
+
+    // ----- FINAL RESPONSE -----
+    await interaction.editReply({
+      content: `✅ Partnership completed with **${serverName}**`
+    });
 
   }
 };
