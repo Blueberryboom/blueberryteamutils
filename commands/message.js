@@ -33,13 +33,13 @@ Breaking any of these rules will result in immediate termination from our partne
 `,
 
   suggestion_accepted: `
-# <:tick:1470047223185408188> Suggestion Accepted
+# <:3169blurpleverified1:1470050180601479178> Suggestion Accepted
 Thanks for making the server a better place!
 We'll aim to have your idea implemented in the next few days!
 `,
 
   suggestion_denied: `
-# <:cross:1470047224619859998> Suggestion Denied
+# <:663005cross:1470050182002638992> Suggestion Denied
 We're sorry, but after review by our staff team, your suggestion has been denied.
 `,
 
