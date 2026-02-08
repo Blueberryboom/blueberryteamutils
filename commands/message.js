@@ -13,7 +13,7 @@ const allowedRoleIds = [
 // ===== YOUR MESSAGE LIBRARY =====
 const messages = {
   partnerguidelines: `
-# 🤝 BlueberryTeam – Partner Guidelines
+# <:312668partner:1470082523026686219> BlueberryTeam – Partner Guidelines
 
 Thanks for being interested in partnering with us!
 By becoming a partner with **The BlueberryTeam**, you agree to the following rules.
