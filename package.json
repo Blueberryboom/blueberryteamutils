@@ -1,6 +1,6 @@
 {
   "name": "blueberryteam-management",
-  "version": "2026.2.1d",
+  "version": "2026.2.3",
   "main": "index.js",
   "dependencies": {
     "discord.js": "^14.14.1",
