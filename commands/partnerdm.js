@@ -14,10 +14,10 @@ const logChannelId = "1468013210446594280";
 const MASS_DM_DELAY = 1500; // 1.5s between messages
 
 // ✍ YOUR SIGNATURE
-const SIGNATURE = `
+const SIGNATURE = (interaction) => `
 —
 **Thanks,**
-<@145530694012345678> | The BlueberryTeam Management
+<@${interaction.user.id}> | The BlueberryTeam Management
 `;
 // ==================
 
@@ -79,7 +79,7 @@ module.exports = {
     }
 
     // Add signature to message
-    const finalMessage = text + SIGNATURE;
+    const finalMessage = text + SIGNATURE(interaction);
 
     const embed = new EmbedBuilder()
       .setTitle("📩 Message from BlueberryTeam")
