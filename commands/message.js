@@ -43,8 +43,11 @@ We'll aim to have your idea implemented in the next few days!
 We're sorry, but after review by our staff team, your suggestion has been denied.
 `,
 
-  huh: `
-huh
+  suggestion_seen: `
+# 🤔 We've seen your suggestion!
+We will need time to think about this suggestion.
+This may be due to existing server updates or other things that require our attention.
+Thanks!
 `
   
 };
@@ -63,7 +66,7 @@ module.exports = {
           { name: 'Partner Guidelines', value: 'partnerguidelines' },
           { name: 'Suggestion - Accepted', value: 'suggestion_accepted' },
           { name: 'Suggestion - Denied', value: 'suggestion_denied' },
-          { name: 'huh', value: 'huh' }
+          { name: 'Suggestion - Seen', value: 'suggestion_seen' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
