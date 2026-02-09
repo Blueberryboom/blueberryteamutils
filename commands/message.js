@@ -12,12 +12,12 @@ const allowedRoleIds = [
 
 // ===== YOUR MESSAGE LIBRARY =====
 const messages = {
-  partnerguidelines: `
+  partner_guidelines: `
 # <:312668partner:1470082523026686219> BlueberryTeam – Partner Guidelines
 
 Thanks for being interested in partnering with us!
 By becoming a partner with **The BlueberryTeam**, you agree to the following rules.
-These rules are subject to changes. In the event of a change, you will be given 2 weeks notice. 
+These rules are subject to changes. In the event of a change, you will be given 1 weeks notice. 
 -# V1
 
 **1.** Your server must have no fewer than 30 human members.
@@ -27,9 +27,18 @@ These rules are subject to changes. In the event of a change, you will be given 
 **5.** If your server has less than 45 members, you must follow our <#1456355064678453279> channel in your server.
 **6.** The server must be advertised in an advertising/partnership specific channel and take no less than 3 seconds to view when scrolling up.
 **7.** The owner/admin of the server MUST stay in this server.
-**8.** *[NOT REQUIRED]* Add our discord bot (BBGames) to your discord! We offer free customization of the bot too! *[STILL IN DEVELOPMENT - DOWNTIME MAY HAPPEN EVERY FEW DAYS WHILE WE FIX CRITICAL BUGS]*
 
 Breaking any of these rules will result in immediate termination from our partners.
+`,
+
+  partner_perks: `
+# <:312668partner:1470082523026686219> BlueberryTeam – Partner Perks
+
+Becoming partners with the server will give you access to multiple perks! Here are a few:
+
+**1.** You can run events on our minecraft network FOR FREE (do this via the /network_planevent command)!
+**2.** Quicker access to new updates and beta versions of our bot(s)!
+**3.** Recieve support and help from this server!
 `,
 
   suggestion_accepted: `
@@ -63,7 +72,8 @@ module.exports = {
         .setDescription('Which message to send')
         .setRequired(true)
         .addChoices(
-          { name: 'Partner Guidelines', value: 'partnerguidelines' },
+          { name: 'Partner Guidelines', value: 'partner_guidelines' },
+          { name: 'Partner Perks', value: 'partner_perks' },
           { name: 'Suggestion - Accepted', value: 'suggestion_accepted' },
           { name: 'Suggestion - Denied', value: 'suggestion_denied' },
           { name: 'Suggestion - Seen', value: 'suggestion_seen' }
