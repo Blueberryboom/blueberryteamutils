@@ -1,5 +1,6 @@
 // Require the necessary discord.js classes
 const { Client, Events, GatewayIntentBits, REST, Routes } = require('discord.js');
+
 require('dotenv').config();
 
 const token = process.env.TOKEN;
@@ -40,7 +41,18 @@ if (fs.existsSync(commandsPath)) {
 
 // ===== READY EVENT – STARTUP LOG + REGISTER COMMANDS =====
 client.once(Events.ClientReady, async () => {
+
   console.log(`Ready! Logged in as ${client.user.tag}`);
+
+  // ============ DATABASE INIT ============
+  const db = require('./database/db');
+
+  try {
+    await db.init();
+  } catch (err) {
+    console.error("❌ DATABASE FAILED TO LOAD:", err);
+  }
+  // ======================================
 
   const logChannelId = "1468013210446594280";
 
@@ -76,6 +88,7 @@ client.once(Events.ClientReady, async () => {
     );
 
     console.log("✅ Slash commands registered automatically");
+
   } catch (err) {
     console.error("Failed to register commands:", err);
   }
@@ -83,6 +96,7 @@ client.once(Events.ClientReady, async () => {
 
 // ===== HANDLE SLASH COMMANDS =====
 client.on(Events.InteractionCreate, async interaction => {
+
   if (!interaction.isChatInputCommand()) return;
 
   const command = client.commands.get(interaction.commandName);
@@ -90,7 +104,9 @@ client.on(Events.InteractionCreate, async interaction => {
 
   try {
     await command.execute(interaction);
+
   } catch (error) {
+
     console.error(error);
 
     if (interaction.replied || interaction.deferred) {
@@ -98,6 +114,7 @@ client.on(Events.InteractionCreate, async interaction => {
         content: 'There was an error running this command!',
         ephemeral: true
       });
+
     } else {
       await interaction.reply({
         content: 'There was an error running this command!',
@@ -111,6 +128,7 @@ client.on(Events.InteractionCreate, async interaction => {
 const eventsPath = path.join(__dirname, 'events');
 
 if (fs.existsSync(eventsPath)) {
+
   const eventFiles = fs.readdirSync(eventsPath)
     .filter(file => file.endsWith('.js'));
 
@@ -118,7 +136,9 @@ if (fs.existsSync(eventsPath)) {
     const filePath = path.join(eventsPath, file);
     const event = require(filePath);
 
-    client.on(event.name, (...args) => event.execute(...args));
+    client.on(event.name, (...args) =>
+      event.execute(...args)
+    );
   }
 }
 
