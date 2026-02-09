@@ -1,7 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder, ThreadAutoArchiveDuration } = require('discord.js');
 
 // ===== CONFIG =====
-const creatorRoleId = "1468302058749690026";
+const creatorRoleId = "1470443565418025091";
 const eventTeamRoleId = "1468294094403928348";
 
 const requestChannelId = "1468298889101705414";
