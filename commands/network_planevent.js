@@ -10,12 +10,12 @@ const logChannelId = "1468013210446594280";
 const COOLDOWN_HOURS = 24;
 // ==================
 
-// In-memory cooldown (you can move to DB later)
+// In-memory cooldown
 const lastRequest = new Map();
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('creator_makeevent')
+    .setName('network_planevent')
     .setDescription('Request to host an event on the network')
 
     .addStringOption(o =>
@@ -58,7 +58,7 @@ module.exports = {
 
     .addStringOption(o =>
       o.setName('server_type')
-        .setDescription('SMP / Events / Minigames / Other')
+        .setDescription('Will you need a special setup for your server? (e.g SMP, minigames, ect.)')
         .setRequired(true)
     )
 
@@ -79,7 +79,7 @@ module.exports = {
     // ----- ROLE CHECK -----
     if (!interaction.member.roles.cache.has(creatorRoleId)) {
       return interaction.reply({
-        content: "❌ Only registered creators can request events!",
+        content: "❌ Only registered creators or partners can request events!",
         ephemeral: true
       });
     }
@@ -93,7 +93,7 @@ module.exports = {
         Math.ceil((COOLDOWN_HOURS * 60 * 60 * 1000 - (now - last)) / 3600000);
 
       return interaction.reply({
-        content: `⏱ You can only submit one event every ${COOLDOWN_HOURS} hours!\nTry again in **${remaining} hours**.`,
+        content: `⏰ You can only submit one event every ${COOLDOWN_HOURS} hours!\nTry again in **${remaining} hours**.`,
         ephemeral: true
       });
     }
@@ -156,10 +156,7 @@ Team: <@&${eventTeamRoleId}>
 Use this thread to:
 • Ask questions  
 • Plan staffing  
-• Approve/deny (using reactions)
-
----`,
-      embeds: [embed]
+• Approve/deny (using reactions)`
     });
 
     // ----- SAVE COOLDOWN -----
@@ -167,7 +164,7 @@ Use this thread to:
 
     // ----- CONFIRM TO CREATOR -----
     await interaction.reply({
-      content: "✅ Your event request has been submitted to the team!",
+      content: "✅ Your event request has been submitted to the team! Expect a DM back soon!",
       ephemeral: true
     });
 
