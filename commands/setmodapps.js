@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const db = require('../database/db');
 
 // ===== CONFIG =====
 const logChannelId = "1468013210446594280";
@@ -9,21 +8,15 @@ const logChannelId = "1468013210446594280";
 const allowedRoleIds = [
   "1468294909420240917", // Blueberry Overlord
   "1468294685452927059", // Administrator
-  "1468292177397285037",  // Senior Moderator
-  "1468294094403928348" // Event Team
+  "1468292177397285037", // Senior Moderator
+  "1468294094403928348"  // Event Team
 ];
-// ==================
-
-const dataFile = path.join(__dirname, '../modapps.json');
-
-function saveData(data) {
-  fs.writeFileSync(dataFile, JSON.stringify(data, null, 2));
-}
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('setmodapps')
     .setDescription('Set whether moderator applications are open or closed')
+
     .addStringOption(option =>
       option
         .setName('status')
@@ -34,6 +27,7 @@ module.exports = {
           { name: 'Closed', value: 'closed' }
         )
     )
+
     .addStringOption(option =>
       option
         .setName('message')
@@ -44,10 +38,8 @@ module.exports = {
   async execute(interaction) {
 
     // ===== ROLE GATE =====
-    const member = interaction.member;
-
     const hasRole = allowedRoleIds.some(id =>
-      member.roles.cache.has(id)
+      interaction.member.roles.cache.has(id)
     );
 
     if (!hasRole) {
@@ -56,19 +48,25 @@ module.exports = {
         ephemeral: true
       });
     }
-    // =====================
 
     const status = interaction.options.getString('status');
     const message = interaction.options.getString('message');
 
-    const data = {
-      open: status === 'open',
-      message: message,
-      setBy: interaction.user.tag,
-      time: Date.now()
-    };
-
-    saveData(data);
+    // ===== SAVE TO DATABASE =====
+    await db.query(`
+      UPDATE mod_applications
+      SET
+        open = ?,
+        message = ?,
+        set_by = ?,
+        time = ?
+      WHERE id = 1
+    `, [
+      status === 'open',
+      message,
+      interaction.user.tag,
+      Date.now()
+    ]);
 
     await interaction.reply({
       content: `✅ Moderator applications set to **${status.toUpperCase()}**`,
@@ -77,17 +75,16 @@ module.exports = {
 
     // ---- LOG ----
     const log = interaction.guild.channels.cache.get(logChannelId);
+
     if (log) {
       log.send(
 `🎉 **Mod Applications Updated**
-
 👤 By: ${interaction.user.tag}  
 📌 Status: **${status.toUpperCase()}**
-
 📝 Message:
 > ${message}`
       );
-    }
 
+    }
   }
 };
