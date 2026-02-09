@@ -1,7 +1,4 @@
-const fs = require('fs');
-const path = require('path');
-
-const dataFile = path.join(__dirname, '../modapps.json');
+const db = require('../database/db');
 
 // ===================== CONFIG =====================
 
@@ -14,22 +11,11 @@ const allowedChannels = [
 const staffLogChannel = "1468013210446594280";
 
 // Cooldown per user (5 minutes)
-const COOLDOWN = 5 * 60;
+const COOLDOWN = 5 * 60 * 1000;
 
 // ==================================================
 
 const cooldowns = new Map();
-
-function loadData() {
-  if (!fs.existsSync(dataFile)) {
-    return {
-      open: false,
-      message: "Moderator applications are currently CLOSED."
-    };
-  }
-
-  return JSON.parse(fs.readFileSync(dataFile));
-}
 
 // Phrases that trigger the response
 const triggers = [
@@ -44,19 +30,31 @@ const triggers = [
   "get staff"
 ];
 
+async function loadData() {
+  const [rows] = await db.query(
+    "SELECT open, message FROM mod_applications WHERE id = 1"
+  );
+
+  return rows?.[0] || {
+    open: false,
+    message: "Moderator applications are currently CLOSED."
+  };
+}
+
 module.exports = {
   name: 'messageCreate',
 
   async execute(message) {
+
     // Ignore bots
     if (message.author.bot) return;
 
-    // ----- CHANNEL WHITELIST (ID BASED) -----
+    // ----- CHANNEL WHITELIST -----
     if (!allowedChannels.includes(message.channel.id)) return;
 
     const content = message.content.toLowerCase();
 
-    // Check if message matches any trigger
+    // ----- TRIGGER CHECK -----
     if (!triggers.some(t => content.includes(t))) return;
 
     // ----- COOLDOWN CHECK -----
@@ -67,7 +65,8 @@ module.exports = {
 
     cooldowns.set(message.author.id, now);
 
-    const data = loadData();
+    // ----- LOAD FROM DATABASE -----
+    const data = await loadData();
 
     const reply =
 `🛡 **Moderator Applications**
@@ -88,6 +87,7 @@ ${data.message}
 `👤 **${message.author.tag}** asked about mod apps  
 📍 Channel: <#${message.channel.id}>  
 💬 Message: "${message.content}"`
+       
         );
       }
     }
