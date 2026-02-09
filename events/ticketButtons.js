@@ -1,4 +1,10 @@
-const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
+const { 
+  EmbedBuilder, 
+  ActionRowBuilder, 
+  ButtonBuilder, 
+  ButtonStyle 
+} = require('discord.js');
+
 const db = require('../database/db');
 const config = require('../config/tickets');
 
@@ -13,7 +19,9 @@ module.exports = {
     if (![
       'ticket_claim',
       'ticket_close',
-      'ticket_closereason'
+      'ticket_closereason',
+      'ticket_close_confirm',
+      'ticket_close_cancel'
     ].includes(id)) return;
 
     const [rows] = await db.query(
@@ -34,10 +42,20 @@ module.exports = {
       return claimTicket(interaction, ticket);
 
     if (id === 'ticket_close')
-      return closeTicket(interaction, ticket, "No reason provided");
+      return askCloseConfirm(interaction, ticket);
 
     if (id === 'ticket_closereason')
       return askReason(interaction, ticket);
+
+    if (id === 'ticket_close_confirm')
+      return confirmClose(interaction, ticket, "No reason provided");
+
+    if (id === 'ticket_close_cancel')
+      return interaction.update({
+        content: "✅ Close cancelled.",
+        embeds: [],
+        components: []
+      });
   }
 };
 
@@ -88,7 +106,7 @@ async function claimTicket(interaction, ticket) {
 
 // ------------------------------------------------
 
-async function closeTicket(interaction, ticket, reason) {
+async function askCloseConfirm(interaction, ticket) {
 
   const isStaff = config.permissions[ticket.type].viewRoles
     .some(id => interaction.member.roles.cache.has(id));
@@ -100,53 +118,78 @@ async function closeTicket(interaction, ticket, reason) {
     });
   }
 
+  const embed = new EmbedBuilder()
+    .setTitle("⚠ Confirm Ticket Closure")
+    .setColor(0xED4245)
+    .setDescription(
+`Are you sure you want to close this ticket?
+
+• Channel will be **deleted**
+• Ticket will be **removed from database**
+• This cannot be undone`
+    );
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ticket_close_confirm')
+      .setLabel('Yes, Delete Ticket')
+      .setStyle(ButtonStyle.Danger),
+
+    new ButtonBuilder()
+      .setCustomId('ticket_close_cancel')
+      .setLabel('Cancel')
+      .setStyle(ButtonStyle.Secondary)
+  );
+
+  await interaction.reply({
+    embeds: [embed],
+    components: [row],
+    ephemeral: true
+  });
+}
+
+// ------------------------------------------------
+
+async function confirmClose(interaction, ticket, reason) {
+
+  // Log the deletion first
   await db.query(
-    "UPDATE tickets SET status = 'closed' WHERE id = ?",
+    "INSERT INTO ticket_logs (ticket_id, action, moderator, info) VALUES (?, ?, ?, ?)",
+    [ticket.id, "DELETE", interaction.user.id, reason]
+  );
+
+  // Remove ticket from main table
+  await db.query(
+    "DELETE FROM tickets WHERE id = ?",
     [ticket.id]
   );
 
-  await db.query(
-    "INSERT INTO ticket_logs (ticket_id, action, moderator, info) VALUES (?, ?, ?, ?)",
-    [ticket.id, "CLOSE", interaction.user.id, reason]
-  );
-
-  await interaction.channel.permissionOverwrites.edit(
-    ticket.user_id,
-    {
-      ViewChannel: false,
-      SendMessages: false
-    }
-  );
-
-  await interaction.channel.send({
-    embeds: [
-      new EmbedBuilder()
-        .setColor(0xED4245)
-        .setTitle("🔒 Ticket Closed")
-        .setDescription(`**Reason:** ${reason}\nClosed by ${interaction.user}`)
-    ]
-  });
-
+  // Send to log channel
   const log = interaction.guild.channels.cache.get(config.logChannelId);
 
   if (log) {
     log.send({
       embeds: [
         new EmbedBuilder()
-          .setTitle("Ticket Closed")
+          .setTitle("🗑 Ticket Deleted")
+          .setColor(0xED4245)
           .addFields(
-            { name: "Ticket", value: `<#${interaction.channel.id}>` },
+            { name: "Channel", value: interaction.channel.name },
             { name: "By", value: interaction.user.tag },
             { name: "Reason", value: reason }
           )
+          .setTimestamp()
       ]
     });
   }
 
   await interaction.reply({
-    content: "Ticket closed.",
+    content: "🗑 Deleting ticket...",
     ephemeral: true
   });
+
+  // Finally delete channel
+  await interaction.channel.delete().catch(() => {});
 }
 
 // ------------------------------------------------
@@ -170,11 +213,7 @@ async function askReason(interaction, ticket) {
 
   collector.on('collect', async msg => {
     await msg.delete().catch(() => {});
-    try {
-      await closeTicket(interaction, ticket, msg.content);
-    } catch (err) {
-      console.error(err);
-    }
+    await confirmClose(interaction, ticket, msg.content);
   });
 
   collector.on('end', c => {
