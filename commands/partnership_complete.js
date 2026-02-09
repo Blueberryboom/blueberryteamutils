@@ -11,6 +11,8 @@ const allowedRoleIds = [
 ];
 
 const partnerRoleId = "1468302227075498105";         // @Partner
+const eventPermsRoleId = "1470443565418025091";   // @Event Request Perms
+
 const logChannelId = "1468013210446594280";          // management-logs
 const partnershipsChannelId = "1459595084663099609"; // public showcase
 // ==================
@@ -46,7 +48,7 @@ module.exports = {
 
   async execute(interaction) {
 
-    // ===== FIX: ACK INTERACTION IMMEDIATELY =====
+    // ===== ACK IMMEDIATELY TO AVOID UNKNOWN INTERACTION =====
     await interaction.deferReply({ flags: 64 });
 
     // ----- ROLE CHECK -----
@@ -91,8 +93,19 @@ module.exports = {
       });
     }
 
-    // ----- ADD ROLE -----
-    await member.roles.add(partnerRoleId);
+    // ----- ADD ROLES (BOTH) -----
+    try {
+      await member.roles.add([
+        partnerRoleId,
+        eventPermsRoleId
+      ]);
+    } catch (err) {
+      console.error("Role add failed:", err);
+
+      return interaction.editReply({
+        content: "❌ Failed to add roles — check bot role position & permissions."
+      });
+    }
 
     // ----- PUBLIC ANNOUNCEMENT -----
     const announce = interaction.guild.channels.cache.get(partnershipsChannelId);
@@ -127,11 +140,14 @@ module.exports = {
         .setDescription(
 `Hi ${user.username}!
 
-Your server **${serverName}** is now officially partnered with us and you now have the **Partner** role in our discord!
+Your server **${serverName}** is now officially partnered with us and you now have:
 
-Please ensure that you follow our partnership guidelines as outlined in the rules you agreed to.
+• **Partner**
+• **Event Permissions**
 
-If you require any further support - let us know in a ticket!
+Please ensure you follow our partnership guidelines as agreed.
+
+Need anything? Open a ticket anytime!
 
 Thanks — **The Blueberry Team Management**`
         )
@@ -155,7 +171,8 @@ Thanks — **The Blueberry Team Management**`
           { name: "Server", value: serverName, inline: true },
           { name: "Rules Shown", value: rulesShown ? "Yes" : "No", inline: true },
           { name: "Our Ad Sent", value: adSent ? "Yes" : "No", inline: true },
-          { name: "Added By", value: `${interaction.user.tag}`, inline: true }
+          { name: "Added By", value: `${interaction.user.tag}`, inline: true },
+          { name: "Roles Added", value: "Partner + Event Perms", inline: true }
         )
         .setTimestamp();
 
@@ -164,7 +181,7 @@ Thanks — **The Blueberry Team Management**`
 
     // ----- FINAL RESPONSE -----
     await interaction.editReply({
-      content: `✅ Partnership completed with **${serverName}**`
+      content: `✅ Partnership completed with **${serverName}** and roles assigned!`
     });
 
   }
