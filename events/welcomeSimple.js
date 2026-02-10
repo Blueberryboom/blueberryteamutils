@@ -1,6 +1,11 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const path = require('path');
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder
+} = require('discord.js');
+
+const db = require('../database/db');
 
 // ===== CONFIG =====
 const welcomeChannelId = "1456367410972987576";
@@ -11,12 +16,19 @@ const SERVER_IP = "play.blueberrynet.uk";
 const STATUS_PAGE = "https://status.blueberrynet.uk";
 // ==================
 
-const goalFile = path.join(__dirname, '../memberGoal.json');
+// ----- REPLACEMENT FOR loadGoal() -----
+async function loadGoal() {
+  try {
+    const [rows] = await db.query(
+      "SELECT goal FROM member_goal ORDER BY id DESC LIMIT 1"
+    );
 
-function loadGoal() {
-  if (!fs.existsSync(goalFile)) return null;
+    return rows?.[0]?.goal || null;
 
-  return JSON.parse(fs.readFileSync(goalFile)).goal;
+  } catch (err) {
+    console.error("Failed to load member goal:", err);
+    return null;
+  }
 }
 
 module.exports = {
@@ -28,12 +40,14 @@ module.exports = {
     console.log("User:", member.user?.tag);
     console.log("Guild:", member.guild.name);
 
-    const channel = member.guild.channels.cache.get(welcomeChannelId);
+    const channel =
+      member.guild.channels.cache.get(welcomeChannelId);
+
     if (!channel) return;
 
     const memberCount = member.guild.memberCount;
 
-    // ----- PLAINTEXT WELCOME -----
+    // ----- PLAINTEXT WELCOME (UNCHANGED) -----
     const row = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
@@ -43,23 +57,24 @@ module.exports = {
       );
 
     await channel.send({
-      content: `👋 Welcome ${member}! You're member **#${memberCount}** on the server! YAY`,
+      content:
+`👋 Welcome ${member}! You're member **#${memberCount}** on the server! YAY`,
       components: [row]
     });
 
-    // ----- CHECK MEMBER GOAL -----
-    const goal = loadGoal();
+    // ----- CHECK MEMBER GOAL (NOW FROM DB) -----
+    const goal = await loadGoal();
 
     if (goal && memberCount >= goal) {
-      const general = member.guild.channels.cache.get(generalChannelId);
+
+      const general =
+        member.guild.channels.cache.get(generalChannelId);
 
       if (general) {
         general.send(
           `🎉 **WE HIT ${goal} MEMBERS!**\nThanks y'all`
         );
       }
-
     }
-
   }
 };
