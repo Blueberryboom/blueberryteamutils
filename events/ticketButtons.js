@@ -193,7 +193,6 @@ async function confirmClose(interaction, ticket, reason) {
 }
 
 // ------------------------------------------------
-
 async function askReason(interaction, ticket) {
 
   await interaction.reply({
@@ -213,15 +212,19 @@ async function askReason(interaction, ticket) {
 
   collector.on('collect', async msg => {
     await msg.delete().catch(() => {});
-    await confirmClose(interaction, ticket, msg.content);
+
+    // USE MSG instead of old interaction
+    await confirmCloseFromMessage(msg, interaction, ticket, msg.content);
   });
 
-  collector.on('end', c => {
+  collector.on('end', async c => {
     if (c.size === 0) {
-      interaction.followUp({
-        content: "❌ Timed out – close cancelled.",
-        ephemeral: true
-      });
+      try {
+        await interaction.followUp({
+          content: "❌ Timed out – close cancelled.",
+          ephemeral: true
+        });
+      } catch {}
     }
   });
 }
