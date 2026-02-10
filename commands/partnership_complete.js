@@ -10,9 +10,10 @@ const allowedRoleIds = [
   "1468294406363680800"  // Moderator
 ];
 
-const partnerRoleId = "1468302227075498105";       // @Partner
-const eventPermsRoleId = "1470443565418025091";    // @Event Request Perms
-const logChannelId = "1468013210446594280";        // management-logs
+const partnerRoleId = "1468302227075498105";        // @Partner
+const eventPermsRoleId = "1470443565418025091";     // @Event Request Perms
+
+const logChannelId = "1468013210446594280";         // management-logs
 const partnershipsChannelId = "1459595084663099609"; // public showcase
 // ==================
 
@@ -65,18 +66,27 @@ module.exports = {
       });
     }
 
-    const user = interaction.options.getUser('user');
-    const serverName = interaction.options.getString('server_name');
-    const rulesShown = interaction.options.getBoolean('rules_shown');
-    const adSent = interaction.options.getBoolean('ad_sent');
+    // =========================================================
+    // CORRECT MEMBER RESOLVING (FIX FOR NUMBER MENTION BUG)
+    // =========================================================
 
-    const member = interaction.guild.members.cache.get(user.id);
+    const member =
+      interaction.options.getMember('user') ||
+      await interaction.guild.members.fetch(
+        interaction.options.getUser('user').id
+      ).catch(() => null);
+
+    const user = interaction.options.getUser('user');
 
     if (!member) {
       return interaction.editReply({
-        content: "❌ User not in server!"
+        content: "❌ User not in server or could not be resolved!"
       });
     }
+
+    const serverName = interaction.options.getString('server_name');
+    const rulesShown = interaction.options.getBoolean('rules_shown');
+    const adSent = interaction.options.getBoolean('ad_sent');
 
     if (!rulesShown) {
       return interaction.editReply({
@@ -110,8 +120,9 @@ module.exports = {
     }
 
     // =========================================================
-    // ----- PUBLIC ANNOUNCEMENT (UPDATED) -----
+    // ----- PUBLIC ANNOUNCEMENT (FIXED MENTIONS) -----
     // =========================================================
+
     const announce =
       interaction.guild.channels.cache.get(partnershipsChannelId);
 
@@ -125,13 +136,13 @@ module.exports = {
 
           {
             name: "<:990644moderatorroleicon:1470566354196369491> Server Owner/Admin",
-            value: `${user}`,
+            value: `<@${member.id}>`,   // ✅ GUILD RESOLVED MENTION
             inline: false
           },
-          
+
           {
-            name: "<:3169blurpleverified1:1470050180601479178> Partnered By",
-            value: `${interaction.user}`,
+            name: "<:3169blurpleverified1:1470050180601479178> Authorized By (Staff)",
+            value: `<@${interaction.member.id}>`, // ✅ ALSO RESOLVED
             inline: false
           },
 
@@ -142,7 +153,6 @@ module.exports = {
               "Send us a ticket in <#1456400359798083789>",
             inline: false
           }
-
         )
 
         .setThumbnail(user.displayAvatarURL())
@@ -153,7 +163,6 @@ module.exports = {
 
     // ----- DM TO PARTNER -----
     try {
-
       const dm = new EmbedBuilder()
         .setTitle("<:312668partner:1470082523026686219> Partnership Confirmed!")
         .setColor(0x57F287)
@@ -161,9 +170,11 @@ module.exports = {
 `Hi ${user.username}!
 
 Your server **${serverName}** is now officially partnered with us and you now have the **Partner** role in our server!
-Use /network_planevent to ask to host an event on our Minecraft network for free!
+
+Use **/network_planevent** to ask to host an event on our Minecraft network for free!
 
 Please ensure you follow our partnership guidelines as agreed.
+
 Need anything? Open a ticket anytime! :)
 
 Thanks — **The Blueberry Team Management**`
@@ -171,7 +182,6 @@ Thanks — **The Blueberry Team Management**`
         .setTimestamp();
 
       await user.send({ embeds: [dm] });
-
     } catch (err) {
       // DM closed – ignore
     }
@@ -187,11 +197,11 @@ Thanks — **The Blueberry Team Management**`
         .setColor(0x5865F2)
 
         .addFields(
-          { name: "Partner", value: `${user.tag}`, inline: true },
+          { name: "Partner", value: user.tag, inline: true },
           { name: "Server", value: serverName, inline: true },
           { name: "Rules Shown", value: rulesShown ? "Yes" : "No", inline: true },
           { name: "Our Ad Sent", value: adSent ? "Yes" : "No", inline: true },
-          { name: "Added By", value: `${interaction.user.tag}`, inline: true },
+          { name: "Authorized By", value: interaction.user.tag, inline: true },
           { name: "Roles Added", value: "Partner + Event Perms", inline: true }
         )
 
