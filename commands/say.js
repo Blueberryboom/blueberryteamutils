@@ -2,12 +2,7 @@ const { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } = require('disc
 
 // ===== CONFIG =====
 const allowedRoleIds = [
-  "1468294909420240917", // Blueberry Overlord
-  "1468294685452927059", // Administrator
-  "1468292177397285037",  // Senior Moderator
-  "1468294094403928348", // Event Team
-  "1455544392415842500", // Trial Mod
-  "1468294406363680800" // Moderator
+  "1470919775847973012" // BBT Team
 ];
 
 const logChannelId = "1468013210446594280";   // 👈 YOUR LOG CHANNEL
