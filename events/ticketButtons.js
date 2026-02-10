@@ -94,7 +94,8 @@ async function claimTicket(interaction, ticket) {
     embeds: [
       new EmbedBuilder()
         .setColor(0x57F287)
-        .setDescription(`✅ Ticket claimed by ${interaction.user}`)
+        .setTitle(`<:3169blurpleverified1:1470050180601479178> Ticket claimed!`)
+        .setDescription(`Your ticket will be handled by ${interaction.user}`)
     ]
   });
 
@@ -108,26 +109,16 @@ async function claimTicket(interaction, ticket) {
 
 async function askCloseConfirm(interaction, ticket) {
 
-  const isStaff = config.permissions[ticket.type].viewRoles
-    .some(id => interaction.member.roles.cache.has(id));
-
-  if (!isStaff) {
-    return interaction.reply({
-      content: "❌ Only staff can close tickets.",
-      ephemeral: true
-    });
-  }
+  // NO STAFF CHECK HERE → ANYONE CAN CLOSE
 
   const embed = new EmbedBuilder()
-    .setTitle("⚠ Confirm Ticket Closure")
+    .setTitle("<a:85951rfalert:1470557230674870476> Confirm Ticket Closure")
     .setColor(0xED4245)
-    .setDescription(
-`Are you sure you want to close this ticket?
+    .setDescription(`Are you sure you want to close this ticket?
 
 • Channel will be **deleted**
 • Ticket will be **removed from database**
-• This cannot be undone`
-    );
+• This cannot be undone`);
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -152,13 +143,13 @@ async function askCloseConfirm(interaction, ticket) {
 
 async function confirmClose(interaction, ticket, reason) {
 
-  // Log the deletion first
+  // Log deletion
   await db.query(
     "INSERT INTO ticket_logs (ticket_id, action, moderator, info) VALUES (?, ?, ?, ?)",
     [ticket.id, "DELETE", interaction.user.id, reason]
   );
 
-  // Remove ticket from main table
+  // Remove ticket from DB
   await db.query(
     "DELETE FROM tickets WHERE id = ?",
     [ticket.id]
@@ -183,16 +174,20 @@ async function confirmClose(interaction, ticket, reason) {
     });
   }
 
-  await interaction.reply({
-    content: "🗑 Deleting ticket...",
-    ephemeral: true
-  });
+  // Acknowledge BEFORE deleting channel
+  try {
+    await interaction.reply({
+      content: "🗑 Deleting ticket...",
+      ephemeral: true
+    });
+  } catch {}
 
   // Finally delete channel
   await interaction.channel.delete().catch(() => {});
 }
 
 // ------------------------------------------------
+
 async function askReason(interaction, ticket) {
 
   await interaction.reply({
@@ -211,20 +206,19 @@ async function askReason(interaction, ticket) {
   });
 
   collector.on('collect', async msg => {
+
     await msg.delete().catch(() => {});
 
-    // USE MSG instead of old interaction
-    await confirmCloseFromMessage(msg, interaction, ticket, msg.content);
+    // FIXED: no double-reply crash
+    await confirmClose(interaction, ticket, msg.content);
   });
 
-  collector.on('end', async c => {
+  collector.on('end', c => {
     if (c.size === 0) {
-      try {
-        await interaction.followUp({
-          content: "❌ Timed out – close cancelled.",
-          ephemeral: true
-        });
-      } catch {}
+      interaction.followUp({
+        content: "❌ Timed out – close cancelled.",
+        ephemeral: true
+      }).catch(() => {});
     }
   });
 }
