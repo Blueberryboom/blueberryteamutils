@@ -12,7 +12,6 @@ const allowedRoleIds = [
 ];
 
 module.exports = {
-
   data: new SlashCommandBuilder()
     .setName('setgoal')
     .setDescription('Set member goal')
@@ -23,37 +22,36 @@ module.exports = {
     ),
 
   async execute(interaction) {
+    const hasRole = allowedRoleIds.some(id =>
+      interaction.member.roles.cache.has(id)
+    );
 
-  const hasRole = allowedRoleIds.some(id =>
-    interaction.member.roles.cache.has(id)
-  );
+    if (!hasRole) {
+      return interaction.reply({
+        content: "❌ You don't have permission.",
+        ephemeral: true
+      });
+    }
 
-  if (!hasRole) {
-    return interaction.reply({
-      content: "❌ You don't have permission.",
+    const amount = interaction.options.getInteger('amount');
+
+    // ---- SAVE ----
+    await db.setGoal(amount, interaction.user);
+
+    await interaction.reply({
+      content: `✅ Member goal set to **${amount}**`,
       ephemeral: true
     });
+
+    // ---- LOG ----
+    const log = interaction.guild.channels.cache.get(logChannelId);
+
+    if (log) {
+      log.send(
+        `🎯 **Member Goal Updated**\n` + 
+        `👤 By: ${interaction.user.tag}\n` + 
+        `🎯 Goal: ${amount}`
+      );
+    }
   }
-
-  const amount = interaction.options.getInteger('amount');
-
-  // ---- SAVE ----
-  await db.setGoal(amount, interaction.user);
-
-  await interaction.reply({
-    content: `✅ Member goal set to **${amount}**`,
-    ephemeral: true
-  });
-
-  // ---- LOG ----
-  const log =
-    interaction.guild.channels.cache.get(logChannelId);
-
-  if (log) {
-    log.send(
-      `🎯 **Member Goal Updated**\n` +
-      `👤 By: ${interaction.user.tag}\n` +
-      `🎯 Goal: ${amount}`
-    );
-  }
-}
+}; 
