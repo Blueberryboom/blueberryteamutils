@@ -46,7 +46,7 @@ In order to advertise here, you need the <@&1460351285327954011>, <@&14683020587
       // Create a button for Buy Me A Coffee
       const button = new ButtonBuilder()
         .setLabel('Paid Access Roles')
-        .setStyle('LINK')
+        .setStyle('Link')
         .setURL('https://www.buymeacoffee.com/Blueberryboom'); // Replace with your actual URL
 
       // Create an action row containing the button
