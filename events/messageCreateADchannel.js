@@ -36,7 +36,8 @@ module.exports = {
 `## Advertising Info
 In order to advertise here, you need the <@&1460351285327954011>, <@&1468302058749690026>, <@&1468302227075498105> or any paid supporter role.
 ### <:rules:1474178164761559192> Advertising Rules
-> - Ad must contain **1** discord server invite link.
+> - Must either be a discord server advertisement or a faction advertisement.
+> - Ad must contain **1** discord server invite link if it is a discord advertisement.
 > - Ad must follow all our <#1455310485363757330>.
 > - Message can't be longer than 10 lines.
 -# <a:85951rfalert:1470557230674870476> Please note: this is the only channel where you can advertise; you cannot ask people to view your ad.`
@@ -47,7 +48,7 @@ In order to advertise here, you need the <@&1460351285327954011>, <@&14683020587
       const button = new ButtonBuilder()
         .setLabel('Paid Access Roles')
         .setStyle('Link')
-        .setURL('https://www.buymeacoffee.com/Blueberryboom'); // Replace with your actual URL
+        .setURL('https://www.buymeacoffee.com/Blueberryboom'); 
 
       // Create an action row containing the button
       const row = new ActionRowBuilder().addComponents(button);
