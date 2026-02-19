@@ -53,8 +53,12 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('how_to_join')
           .setLabel('Minecraft IP')
-          .setStyle(ButtonStyle.Primary)
-      );
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setLabel('Buy Me A Coffee')
+          .setStyle(ButtonStyle.Link)
+          .setURL('https://buymeacoffee.com/blueberryboom')
+    );
 
     await channel.send({
       content:
