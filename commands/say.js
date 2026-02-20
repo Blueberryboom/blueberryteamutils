@@ -7,14 +7,6 @@ const allowedRoleIds = [
 const logChannelId = "1468013210446594280";
 // ==================
 
-function stripMentions(input) {
-  if (!input) return input;
-  const withoutAngle = input.replace(/<@!?\d+>|<@&\d+>|<#\d+>/g, '');
-  return withoutAngle.replace(/@\S+/g, m =>
-    (m === '@everyone' || m === '@here') ? '' : m.slice(1)
-  );
-}
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('say')
@@ -50,6 +42,7 @@ module.exports = {
     const channel = interaction.options.getChannel('channel') || interaction.channel;
     const useEmbed = interaction.options.getBoolean('embed');
 
+    // Block @everyone and @here
     if (/@everyone|@here/i.test(text)) {
       return interaction.reply({
         content: "❌ You cannot use @everyone or @here with this command.",
@@ -57,24 +50,26 @@ module.exports = {
       });
     }
 
-    const safeText = stripMentions(text);
-
     let sentMessage;
 
     if (useEmbed) {
       const embed = new EmbedBuilder()
-        .setDescription(safeText)
+        .setDescription(text)
         .setColor(0x57F287)
         .setFooter({ text: `Sent by ${interaction.user.tag}` });
 
       sentMessage = await channel.send({
         embeds: [embed],
-        allowedMentions: { parse: [] }
+        allowedMentions: {
+          parse: ['users', 'roles']
+        }
       });
     } else {
       sentMessage = await channel.send({
-        content: safeText,
-        allowedMentions: { parse: [] }
+        content: text,
+        allowedMentions: {
+          parse: ['users', 'roles']
+        }
       });
     }
 
