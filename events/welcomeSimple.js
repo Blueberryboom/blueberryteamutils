@@ -55,7 +55,7 @@ module.exports = {
           .setLabel('Minecraft IP')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-          .setLabel('Buy Me A Coffee')
+          .setLabel('Support Us')
           .setStyle(ButtonStyle.Link)
           .setURL('https://buymeacoffee.com/blueberryboom')
     );
