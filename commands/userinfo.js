@@ -1,10 +1,6 @@
 const {
   SlashCommandBuilder,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  PermissionFlagsBits
+  EmbedBuilder
 } = require('discord.js');
 
 module.exports = {
@@ -15,12 +11,12 @@ module.exports = {
       option
         .setName('user')
         .setDescription('User to view')
-        .setRequired(true)
+        .setRequired(false)
     ),
 
   async execute(interaction) {
 
-    const target = interaction.options.getUser('user');
+    const target = interaction.options.getUser('user') || interaction.user;
     const member = await interaction.guild.members.fetch(target.id).catch(() => null);
 
     if (!member) {
@@ -30,47 +26,55 @@ module.exports = {
       });
     }
 
+    // Fetch full user for banner info
+    const fullUser = await target.fetch();
+
     const roles = member.roles.cache
       .filter(r => r.id !== interaction.guild.id)
-      .map(r => r.toString())
-      .join(", ") || "None";
+      .sort((a, b) => b.position - a.position)
+      .map(r => `• ${r}`)
+      .join("\n") || "None";
 
     const embed = new EmbedBuilder()
-      .setTitle(`👤 User Info — ${target.tag}`)
-      .setColor(0x5865F2)
-      .setThumbnail(target.displayAvatarURL({ dynamic: true }))
+      .setColor(member.displayHexColor === "#000000" ? 0x5865F2 : member.displayHexColor)
+      .setAuthor({
+        name: `${target.tag}`,
+        iconURL: target.displayAvatarURL({ dynamic: true })
+      })
+      .setThumbnail(target.displayAvatarURL({ dynamic: true, size: 256 }))
+      .setDescription("### 👤 User Information")
       .addFields(
-        { name: "User ID", value: target.id, inline: true },
-        { name: "Bot?", value: target.bot ? "Yes" : "No", inline: true },
-        { name: "Account Created", value: `<t:${Math.floor(target.createdTimestamp / 1000)}:F>`, inline: false },
-        { name: "Joined Server", value: `<t:${Math.floor(member.joinedTimestamp / 1000)}:F>`, inline: false },
-        { name: "Highest Role", value: member.roles.highest.toString(), inline: true },
-        { name: "Boosting?", value: member.premiumSince ? "Yes" : "No", inline: true },
-        { name: "Timed Out?", value: member.communicationDisabledUntil ? "Yes" : "No", inline: true },
-        { name: "Roles", value: roles.length > 1024 ? "Too many roles to display." : roles }
+        {
+          name: "🧾 General",
+          value:
+`**User:** ${target}
+**ID:** \`${target.id}\`
+**Created:** <t:${Math.floor(target.createdTimestamp / 1000)}:R>
+**Bot:** ${target.bot ? "Yes" : "No"}
+**Banner Color:** ${fullUser.hexAccentColor || "None"}`,
+          inline: false
+        },
+        {
+          name: "🏠 Server",
+          value:
+`**Joined:** <t:${Math.floor(member.joinedTimestamp / 1000)}:R>
+**Highest Role:** ${member.roles.highest}
+**Boosting:** ${member.premiumSince ? "Yes" : "No"}
+**Timed Out:** ${member.communicationDisabledUntil ? "Yes" : "No"}`,
+          inline: false
+        },
+        {
+          name: `🎭 Roles (${member.roles.cache.size - 1})`,
+          value: roles.length > 1024 ? "Too many roles to display." : roles,
+          inline: false
+        }
       )
+      .setFooter({
+        text: `Requested by ${interaction.user.tag}`,
+        iconURL: interaction.user.displayAvatarURL({ dynamic: true })
+      })
       .setTimestamp();
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`timeout_${target.id}`)
-        .setLabel("Timeout")
-        .setStyle(ButtonStyle.Secondary),
-
-      new ButtonBuilder()
-        .setCustomId(`kick_${target.id}`)
-        .setLabel("Kick")
-        .setStyle(ButtonStyle.Danger),
-
-      new ButtonBuilder()
-        .setCustomId(`ban_${target.id}`)
-        .setLabel("Ban")
-        .setStyle(ButtonStyle.Danger)
-    );
-
-    await interaction.reply({
-      embeds: [embed],
-      components: [row]
-    });
+    await interaction.reply({ embeds: [embed] });
   }
 };
