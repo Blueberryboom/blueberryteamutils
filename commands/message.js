@@ -87,7 +87,8 @@ module.exports = {
           { name: 'Partner Perks', value: 'partner_perks' },
           { name: 'Suggestion - Accepted', value: 'suggestion_accepted' },
           { name: 'Suggestion - Denied', value: 'suggestion_denied' },
-          { name: 'Suggestion - Seen', value: 'suggestion_seen' }
+          { name: 'Suggestion - Seen', value: 'suggestion_seen' },
+          { name: 'Creator Guidelines', value: 'creator_guidelines' }
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
